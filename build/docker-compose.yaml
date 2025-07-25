@@ -1,0 +1,12 @@
+services:
+  database:
+    container_name: db_sqlite
+    build:
+      context: .
+      dockerfile: Dockerfile.database
+    volumes:
+      - ./sqlite_data:/database
+    command: ["tail", "-f", "/dev/null"]
+  
+volumes:
+  sqlite_data:
