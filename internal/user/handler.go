@@ -27,15 +27,6 @@ func hashPassword(pass string) string {
 	return string(hashedPass)
 }
 
-func checkPassword(hashedPass string, pass string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hashedPass), []byte(pass))
-	if err != nil {
-		fmt.Println("deu erro aqui kk")
-		return false
-	}
-	return true
-}
-
 func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	body := RequestDTO{}
@@ -123,29 +114,4 @@ func (h *handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func (h *handler) LoginTeste(w http.ResponseWriter, r *http.Request) {
 
-	body := Login{}
-	err := json.NewDecoder(r.Body).Decode(&body)
-	if err != nil {
-		http.Error(w, "erro login", 422)
-		return
-	}
-
-	user, err := h.repository.GetByEmail(body.Email)
-	if err != nil {
-		http.Error(w, "erro user", 422)
-		return
-	}
-
-	if user.ID == 0 {
-		http.Error(w, "not found", 404)
-		return
-	}
-	flamengo := checkPassword(user.Password, body.Password)
-	if !flamengo {
-		fmt.Println("senhas diferente")
-	} else {
-		fmt.Println("senhas iguais")
-	}
-}

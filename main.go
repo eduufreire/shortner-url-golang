@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/eduufreire/url-shortner/internal/auth"
 	"github.com/eduufreire/url-shortner/internal/database"
 	"github.com/eduufreire/url-shortner/internal/shortner"
 	"github.com/eduufreire/url-shortner/internal/user"
@@ -16,11 +17,14 @@ func main() {
 	userRepo := user.Repository(db)
 	uh := user.Handler(userRepo)
 
+	ah := auth.Handler(userRepo)
+
 	http.HandleFunc("POST /shortners", sh.CreateUrl)
 	http.HandleFunc("GET /shortners/{hash}", sh.GetUrl)
 
 	http.HandleFunc("POST /users", uh.CreateUser)
-	http.HandleFunc("POST /users/login", uh.LoginTeste)
+
+	http.HandleFunc("POST /auth/login", ah.Login)
 
 	http.ListenAndServe(":8080", nil)
 }

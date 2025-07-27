@@ -5,6 +5,12 @@ import (
 	"fmt"
 )
 
+type UserRepository interface {
+	Save(data RequestDTO) (*int64, error)
+	GetByID(id int) (*User, error)
+	GetByEmail(email string) (*User, error)
+}
+
 type repository struct {
 	db *sql.DB
 }
