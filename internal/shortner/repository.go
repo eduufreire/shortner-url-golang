@@ -16,12 +16,12 @@ func Repository(db *sql.DB) *repository {
 }
 
 func (r *repository) Save(data Shortner) error {
-	stmt, err := r.db.Prepare("insert into shortner (hash_url, original_url, clicks) values (?, ?, ?)")
+	stmt, err := r.db.Prepare("insert into shortner (hash_url, original_url, clicks, user_id) values (?, ?, ?, ?)")
 	if err != nil {
 		return fmt.Errorf("Error found in statement")
 	}
 
-	_, err = stmt.Exec(data.HashUrl, data.OriginalUrl, data.Clicks)
+	_, err = stmt.Exec(data.HashUrl, data.OriginalUrl, data.Clicks, data.UserID)
 	if err != nil {
 		return fmt.Errorf("Error found in insert")
 	}

@@ -7,6 +7,8 @@ import (
 	"hash/maphash"
 	"net/http"
 	"strings"
+
+	"github.com/eduufreire/url-shortner/internal/auth"
 )
 
 type handler struct {
@@ -29,10 +31,20 @@ func hashUrl(url string) string {
 
 func (h *handler) CreateUrl(w http.ResponseWriter, r *http.Request) {
 
-	body := RequestDTO{}
-	err := json.NewDecoder(r.Body).Decode(&body)
+	token := r.Header.Get("Authorization")
+	splitedToken := strings.Split(token, " ")
+	user, err := auth.VerifyToken(splitedToken[1])
 	if err != nil {
 		w.Write([]byte(err.Error()))
+		return
+	}
+
+	body := RequestDTO{}
+	err = json.NewDecoder(r.Body).Decode(&body)
+	if err != nil {
+		w.WriteHeader(401)
+		w.Write([]byte(err.Error()))
+		return
 	}
 
 	hashUrl := hashUrl(body.OriginalUrl)
@@ -41,6 +53,7 @@ func (h *handler) CreateUrl(w http.ResponseWriter, r *http.Request) {
 		HashUrl:     hashUrl,
 		OriginalUrl: body.OriginalUrl,
 		Clicks:      0,
+		UserID: user.ID,
 	}
 
 	if err := h.repository.Save(data); err != nil {
@@ -61,6 +74,14 @@ func (h *handler) CreateUrl(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) GetUrl(w http.ResponseWriter, r *http.Request) {
+	token := r.Header.Get("Authorization")
+	splitedToken := strings.Split(token, " ")
+	_, err := auth.VerifyToken(splitedToken[1])
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
 	hash := r.PathValue("hash")
 
 	data, err := h.repository.GetByHash(hash)

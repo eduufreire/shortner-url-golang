@@ -46,12 +46,11 @@ func VerifyToken(tokenString string) (*User, error) {
 
 	if err != nil {
 		fmt.Println(err.Error())
-		return nil, nil
+		return nil, fmt.Errorf("erro em alguma coisa: %s", err.Error())
 	}
 
 	if !token.Valid {
-		fmt.Println("erro ao validar o token")
-		return nil, nil
+		return nil, fmt.Errorf("token invalido")
 	}
 
 	user := User{}
