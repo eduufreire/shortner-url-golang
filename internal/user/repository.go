@@ -5,23 +5,17 @@ import (
 	"fmt"
 )
 
-type UserRepository interface {
-	Save(data RequestDTO) (*int64, error)
-	GetByID(id int) (*User, error)
-	GetByEmail(email string) (*User, error)
-}
-
-type repository struct {
+type userRepository struct {
 	db *sql.DB
 }
 
-func Repository(db *sql.DB) *repository {
-	return &repository{
+func NewUserRepository(db *sql.DB) UserRepository {
+	return &userRepository {
 		db: db,
 	}
 }
 
-func (r *repository) Save(data RequestDTO) (*int64, error) {
+func (r *userRepository) Save(data RequestDTO) (*int64, error) {
 	stmt, err := r.db.Prepare("insert into user(name, email, password) values(?, ?, ?)")
 	if err != nil {
 		return nil, fmt.Errorf("deu ruim")
@@ -40,7 +34,7 @@ func (r *repository) Save(data RequestDTO) (*int64, error) {
 	return &lastID, nil
 }
 
-func (r *repository) GetByID(id int) (*User, error) {
+func (r *userRepository) GetByID(id int) (*User, error) {
 	stmt, err := r.db.Prepare("select * from user where id = ?")
 	if err != nil {
 		return nil, fmt.Errorf("deu ruim")
@@ -51,7 +45,7 @@ func (r *repository) GetByID(id int) (*User, error) {
 	return &user, nil
 }
 
-func (r *repository) GetByEmail(email string) (*User, error) {
+func (r *userRepository) GetByEmail(email string) (*User, error) {
 	stmt, err := r.db.Prepare("select * from user where email = ?")
 	if err != nil {
 		return nil, fmt.Errorf("deu ruim")

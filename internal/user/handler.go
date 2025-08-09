@@ -4,18 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-type handler struct {
-	repository *repository
+type userHandler struct {
+	service UserService
 }
 
-func Handler(repository *repository) *handler {
-	return &handler{
-		repository: repository,
+func NewUserHandler(service UserService) UserHandler {
+	return &userHandler{
+		service: service,
 	}
 }
 
@@ -27,8 +26,7 @@ func hashPassword(pass string) string {
 	return string(hashedPass)
 }
 
-func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
-
+func (uh *userHandler) Create(w http.ResponseWriter, r *http.Request) {
 	body := RequestDTO{}
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
@@ -36,75 +34,9 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userExists, err := h.repository.GetByEmail(body.Email)
-	if err != nil {
-		http.Error(w, "erro ao cadastrar novo usuario", 422)
-		return
-	}
+	createdUser := uh.service.Create(body)
 
-	if userExists.ID != 0 {
-		http.Error(w, "user already exists", 400)
-		return
-	}
-
-	hashedPass := hashPassword(body.Password)
-	body.Password = hashedPass
-
-	newID, err := h.repository.Save(body)
-	fmt.Println(int(*newID))
-	if err != nil {
-		http.Error(w, "erro ao cadastrar novo usuario", 422)
-		return
-	}
-
-	user, err := h.repository.GetByID(int(*newID))
-	if err != nil {
-		http.Error(w, "erro ao cadastrar novo usuario", 422)
-		return
-	}
-
-	userResponse := ResponseDTO{
-		ID:   user.ID,
-		Name: user.Name,
-	}
-
-	response, err := json.Marshal(userResponse)
-	if err != nil {
-		http.Error(w, "erro ao cadastrar novo usuario", 422)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(response)
-
-}
-
-func (h *handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
-
-	id := r.PathValue("id")
-	parsedID, err := strconv.Atoi(id)
-	if err != nil {
-		http.Error(w, "erro ao cadastrar novo usuario", 422)
-		return
-	}
-
-	user, err := h.repository.GetByID(parsedID)
-	if err != nil {
-		http.Error(w, "erro ao cadastrar novo usuario", 422)
-		return
-	}
-
-	if user.ID == 0 {
-		http.Error(w, "not found", 404)
-		return
-	}
-
-	userResponse := ResponseDTO{
-		ID:   user.ID,
-		Name: user.Name,
-	}
-
-	response, err := json.Marshal(userResponse)
+	response, err := json.Marshal(createdUser)
 	if err != nil {
 		http.Error(w, "erro ao cadastrar novo usuario", 422)
 		return
@@ -113,3 +45,38 @@ func (h *handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 }
+
+// func (uh *userHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
+
+// 	id := r.PathValue("id")
+// 	parsedID, err := strconv.Atoi(id)
+// 	if err != nil {
+// 		http.Error(w, "erro ao cadastrar novo usuario", 422)
+// 		return
+// 	}
+
+// 	user, err := uh.repository.GetByID(parsedID)
+// 	if err != nil {
+// 		http.Error(w, "erro ao cadastrar novo usuario", 422)
+// 		return
+// 	}
+
+// 	if user.ID == 0 {
+// 		http.Error(w, "not found", 404)
+// 		return
+// 	}
+
+// 	userResponse := ResponseDTO{
+// 		ID:   user.ID,
+// 		Name: user.Name,
+// 	}
+
+// 	response, err := json.Marshal(userResponse)
+// 	if err != nil {
+// 		http.Error(w, "erro ao cadastrar novo usuario", 422)
+// 		return
+// 	}
+
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.Write(response)
+// }
