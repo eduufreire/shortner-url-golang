@@ -7,10 +7,6 @@ import (
 )
 
 func main() {
-	// db := database.CreateDatabase()
-	// repo := shortner.Repository(db)
-	// sh := shortner.Handler(repo)
-
 	dependencies := dependencies.Init().Wire()
 
 	// antes da versao 1.22, os devs precisavam controlar o roteamento manualmente
@@ -20,10 +16,8 @@ func main() {
 	// 	Addr: ":8080",
 	// }
 	http.Handle("/users/", http.StripPrefix("/users", dependencies.UserRoutes))
+	http.Handle("/urls/", http.StripPrefix("/urls", dependencies.ShortnerRoutes))
 
-	// http.HandleFunc("POST /shortners", sh.CreateUrl)
-	// http.HandleFunc("POST /users", uh.CreateUser)
-	// http.HandleFunc("GET /shortners/{hash}", sh.GetUrl)
 	// http.HandleFunc("POST /auth/login", ah.Login)
 	http.ListenAndServe(":8080", nil)
 }

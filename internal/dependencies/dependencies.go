@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/eduufreire/url-shortner/internal/database"
+	"github.com/eduufreire/url-shortner/internal/shortner"
 	"github.com/eduufreire/url-shortner/internal/user"
 )
 
@@ -16,6 +17,11 @@ type injector struct {
 	userHandler    user.UserHandler
 	userService    user.UserService
 	userRepository user.UserRepository
+
+	ShortnerRoutes     *http.ServeMux
+	shortnerHandler    shortner.ShortnerHandler
+	shortnerService    shortner.ShortnerService
+	shortnerRepository shortner.ShortnerRepository
 }
 
 var (
@@ -48,8 +54,24 @@ func (i *injector) Wire() *injector {
 		i.userHandler = user.NewUserHandler(i.userService)
 	}
 
-	if(i.UserRoutes == nil) {
+	if i.UserRoutes == nil {
 		i.UserRoutes = user.Routes(i.userHandler)
+	}
+
+	if i.shortnerRepository == nil {
+		i.shortnerRepository = shortner.NewShortnerRepository(i.database)
+	}
+
+	if i.shortnerService == nil {
+		i.shortnerService = shortner.NewShortnerService(i.shortnerRepository)
+	}
+
+	if i.shortnerHandler == nil {
+		i.shortnerHandler = shortner.NewShortnerHandler(i.shortnerService)
+	}
+
+	if i.ShortnerRoutes == nil {
+		i.ShortnerRoutes = shortner.Routes(i.shortnerHandler)
 	}
 
 	return i

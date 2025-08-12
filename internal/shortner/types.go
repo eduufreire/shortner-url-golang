@@ -1,5 +1,7 @@
 package shortner
 
+import "net/http"
+
 type Shortner struct {
 	HashUrl     string `json:"hash_url"`
 	OriginalUrl string `json:"original_url"`
@@ -16,15 +18,19 @@ type responseDTO struct {
 	OriginalUrl string `json:"original_url"`
 	Clicks      int    `json:"clicks"`
 	UserID      int    `json:"user_id"`
-	BaseUrl     string `json:"base_url"`
 }
 
-func ResponseDTO(data Shortner) *responseDTO {
-	return &responseDTO{
-		OriginalUrl: data.OriginalUrl,
-		HashUrl:     data.HashUrl,
-		Clicks:      data.Clicks,
-		UserID:      data.UserID,
-		BaseUrl:     "http://encurtador-caseiro.com/",
-	}
+type ShortnerHandler interface {
+	Create(w http.ResponseWriter, r *http.Request)
+	Get(w http.ResponseWriter, r *http.Request)
+}
+
+type ShortnerService interface {
+	Create(originalUrl string, userID int) responseDTO
+	GetByHash(hashUrl string) responseDTO
+}
+
+type ShortnerRepository interface {
+	Save(data Shortner)  error
+	GetByHash(hashUrl string) (*Shortner, error)
 }
