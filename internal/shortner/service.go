@@ -42,12 +42,11 @@ func (s *shortnerService) Create(originalUrl string, userID int) responseDTO {
 }
 
 func (s *shortnerService) GetByHash(hashUrl string) responseDTO {
-
 	data, err := s.repository.GetByHash(hashUrl)
 	if err != nil {
 		log.Fatal("erro")
 	}
-	
+
 	if url := data.OriginalUrl; url == "" {
 		log.Fatal("nao encontrado")
 	}

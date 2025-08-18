@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/eduufreire/url-shortner/internal/auth"
 	"github.com/eduufreire/url-shortner/internal/database"
+	"github.com/eduufreire/url-shortner/internal/logger"
 	"github.com/eduufreire/url-shortner/internal/shortner"
 	"github.com/eduufreire/url-shortner/internal/user"
 )
@@ -22,6 +24,9 @@ type injector struct {
 	shortnerHandler    shortner.ShortnerHandler
 	shortnerService    shortner.ShortnerService
 	shortnerRepository shortner.ShortnerRepository
+
+	loginService auth.LoginService
+	LoginHandler auth.LoginHandler
 }
 
 var (
@@ -37,6 +42,8 @@ func Init() *injector {
 }
 
 func (i *injector) Wire() *injector {
+
+	logger.InitLogger()
 
 	if i.database == nil {
 		i.database = database.CreateDatabase()
@@ -72,6 +79,14 @@ func (i *injector) Wire() *injector {
 
 	if i.ShortnerRoutes == nil {
 		i.ShortnerRoutes = shortner.Routes(i.shortnerHandler)
+	}
+
+	if i.loginService == nil {
+		i.loginService = auth.NewLoginService(i.userRepository)
+	}
+
+	if i.LoginHandler == nil {
+		i.LoginHandler = auth.NewLoginHandler(i.loginService)
 	}
 
 	return i

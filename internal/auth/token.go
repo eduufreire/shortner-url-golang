@@ -9,16 +9,6 @@ import (
 
 var secretKey = []byte("SigningTOkenKeySecurity")
 
-type User struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-type TokenClaims struct {
-	User User `json:"user"`
-	jwt.RegisteredClaims
-}
-
 func createToken(id int, name string) string {
 
 	claims := TokenClaims{
